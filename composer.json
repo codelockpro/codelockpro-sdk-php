@@ -1,0 +1,23 @@
+{
+	"name": "codelockpro/sdk",
+	"description": "Framework-agnostic, modular server-side SDK for CodeLockPro. Module one: Knowledge base. Pure library — no framework binding, no routing.",
+	"type": "library",
+	"license": "Apache-2.0",
+	"require": {
+		"php": ">=8.1",
+		"ext-curl": "*",
+		"ext-json": "*"
+	},
+	"autoload": {
+		"psr-4": {
+			"CodeLockPro\\": "src/"
+		}
+	},
+	"keywords": [
+		"codelockpro",
+		"sdk",
+		"knowledge-base",
+		"licensing"
+	],
+	"minimum-stability": "stable"
+}
