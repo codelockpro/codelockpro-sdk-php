@@ -4,37 +4,54 @@ declare(strict_types=1);
 
 namespace CodeLockPro;
 
+use CodeLockPro\Core\EventBus;
+use CodeLockPro\Core\ModuleContext;
+use CodeLockPro\Core\ModuleRegistry;
 use CodeLockPro\Modules\KnowledgeBase;
 
 /**
- * `codelockpro/sdk` — framework-agnostic server-side SDK.
+ * `codelockpro/sdk` — the CodeLockPro client framework, server side.
+ *
+ * This is **not** a knowledge-base SDK. It is the foundation a developer
+ * uses on their own backend to compose CodeLockPro modules:
+ *
+ *   - ``kb``        — knowledge base (module one, ships in this package)
+ *   - ``community`` — user auth, account settings, license downloads (planned)
+ *   - ``checkout``  — initiate and complete purchases (planned)
+ *   - ``payments``  — invoices, payment history (planned)
+ *   - ``chatbot``   — AI support integration (planned)
+ *
+ * The core knows about **none** of those modules. Modules are attached
+ * via {@see CodeLockPro::register()} (KB is registered automatically by
+ * default) and looked up by name via {@see CodeLockPro::module()}. Each
+ * module receives a {@see ModuleContext} carrying the shared event bus
+ * and a back-reference to this client for HTTP.
  *
  * Architecture invariants (mirrors the JS package — see /docs/sdk/README.md):
  *
- *   1. Modular foundation. Not knowledge-base specific. KB is module one;
- *      future modules (community, chatbot, …) attach to the same instance.
- *   2. Pure library. No framework binding, no routing. The developer wires
- *      up endpoints in their own stack (Laravel, Symfony, vanilla PHP) and
- *      uses this client to call the upstream CodeLockPro public API.
+ *   1. Modular foundation. No coupling to any specific module.
+ *   2. Pure library. No framework binding, no routing. The developer
+ *      wires up endpoints in their own stack.
  *   3. Zero web-framework dependencies. Only ext-curl + ext-json.
- *
- * Configure the client with the upstream CodeLockPro base URL — typically
- * `https://api.codelock.pro`. The corresponding `application_id` is set
- * once and used by every module call.
  */
 final class CodeLockPro
 {
-    public readonly KnowledgeBase $kb;
+    private readonly EventBus $bus;
+    private readonly ModuleRegistry $registry;
 
     /**
      * @param string $baseUrl       Upstream CodeLockPro base URL, e.g. https://api.codelock.pro
      * @param string $applicationId The ULID of the developer's application — scopes every read
      * @param array<string,string> $defaultHeaders Optional headers merged into every request.
+     * @param array<string,callable>|false $modules Module factories to register at construction.
+     *        Each value is ``callable(ModuleContext): object``. Default: KB only. Pass ``false``
+     *        to skip the default registration and register everything explicitly.
      */
     public function __construct(
         private readonly string $baseUrl,
         private readonly string $applicationId,
         private readonly array $defaultHeaders = [],
+        array|false $modules = null,
     ) {
         if ($baseUrl === '') {
             throw new \InvalidArgumentException('CodeLockPro: baseUrl is required');
@@ -42,12 +59,82 @@ final class CodeLockPro
         if ($applicationId === '') {
             throw new \InvalidArgumentException('CodeLockPro: applicationId is required');
         }
-        $this->kb = new KnowledgeBase($this);
+        $this->bus = new EventBus();
+        $this->registry = new ModuleRegistry();
+
+        // Default registration: KB is module one. Pass ``modules: false``
+        // (or override with an explicit array) to opt out — the core
+        // itself has no knowledge-base coupling.
+        if ($modules === false) {
+            $toRegister = [];
+        } elseif ($modules === null) {
+            $toRegister = ['kb' => [KnowledgeBase::class, 'create']];
+        } else {
+            $toRegister = $modules;
+        }
+        foreach ($toRegister as $name => $factory) {
+            $this->register((string) $name, $factory);
+        }
     }
 
     public function getApplicationId(): string
     {
         return $this->applicationId;
+    }
+
+    /**
+     * Register a module after construction. KB, future first-party
+     * modules, and host-app extensions all use this entry point.
+     *
+     * @param callable(ModuleContext): object $factory
+     */
+    public function register(string $name, callable $factory): object
+    {
+        $ctx = new ModuleContext(name: $name, client: $this, bus: $this->bus);
+        $instance = $factory($ctx);
+        if (!is_object($instance)) {
+            throw new \LogicException("register: factory for \"$name\" must return an object");
+        }
+        return $this->registry->register($name, $instance);
+    }
+
+    /** Look up a previously registered module by name. */
+    public function module(string $name): object
+    {
+        return $this->registry->get($name);
+    }
+
+    /** @return list<string> */
+    public function moduleNames(): array
+    {
+        return $this->registry->names();
+    }
+
+    public function on(string $event, callable $handler): callable
+    {
+        return $this->bus->on($event, $handler);
+    }
+
+    public function off(string $event, callable $handler): void
+    {
+        $this->bus->off($event, $handler);
+    }
+
+    public function emit(string $event, mixed $payload = null): void
+    {
+        $this->bus->emit($event, $payload);
+    }
+
+    /**
+     * Convenience accessor for the knowledge-base module — equivalent to
+     * ``$client->module('kb')``. Provided as ergonomic sugar so existing
+     * call sites read naturally; KB is not privileged inside the core.
+     */
+    public function kb(): KnowledgeBase
+    {
+        /** @var KnowledgeBase $kb */
+        $kb = $this->module('kb');
+        return $kb;
     }
 
     /**
