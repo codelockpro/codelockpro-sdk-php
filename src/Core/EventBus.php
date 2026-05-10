@@ -9,9 +9,8 @@ namespace CodeLockPro\Core;
  *
  * Mirrors the JS package: minimal API (``on`` / ``off`` / ``emit``), no
  * priority, no async fan-out, no wildcards. Modules namespace their
- * events as ``"<module>.<event>"`` (``kb.article.viewed``,
- * ``checkout.session.created``, …). The bus has no awareness of which
- * module emits what.
+ * events as ``"<module>.<event>"`` (e.g. ``kb.article.viewed``). The
+ * bus has no awareness of which module emits what.
  */
 final class EventBus
 {

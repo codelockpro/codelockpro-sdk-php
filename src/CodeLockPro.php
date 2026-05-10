@@ -12,20 +12,17 @@ use CodeLockPro\Modules\KnowledgeBase;
 /**
  * `codelockpro/sdk` — the CodeLockPro client framework, server side.
  *
- * This is **not** a knowledge-base SDK. It is the foundation a developer
- * uses on their own backend to compose CodeLockPro modules:
+ * A generic, modular foundation a developer uses on their own backend
+ * to compose CodeLockPro features. The package ships with a single
+ * built-in module (``kb`` — knowledge base) and exposes the same
+ * registration surface for any additional modules the developer
+ * authors or that ship in future package versions.
  *
- *   - ``kb``        — knowledge base (module one, ships in this package)
- *   - ``community`` — user auth, account settings, license downloads (planned)
- *   - ``checkout``  — initiate and complete purchases (planned)
- *   - ``payments``  — invoices, payment history (planned)
- *   - ``chatbot``   — AI support integration (planned)
- *
- * The core knows about **none** of those modules. Modules are attached
- * via {@see CodeLockPro::register()} (KB is registered automatically by
- * default) and looked up by name via {@see CodeLockPro::module()}. Each
- * module receives a {@see ModuleContext} carrying the shared event bus
- * and a back-reference to this client for HTTP.
+ * The core has no knowledge of any specific module. Modules are
+ * attached via {@see CodeLockPro::register()} and looked up by name
+ * via {@see CodeLockPro::module()}. Each module receives a
+ * {@see ModuleContext} carrying the shared event bus and a
+ * back-reference to this client for HTTP.
  *
  * Architecture invariants (mirrors the JS package — see /docs/sdk/README.md):
  *

@@ -9,11 +9,11 @@ use CodeLockPro\Core\EventBus;
 use CodeLockPro\Core\ModuleContext;
 
 /**
- * Knowledge base — module one of the server-side SDK.
+ * Knowledge base — the built-in module of the server-side SDK.
  *
  * Conforms to the generic module contract: created by a factory that
  * receives a {@see ModuleContext}. The SDK core does not privilege KB
- * over any future module (community, checkout, payments, chatbot, …).
+ * over any other module registered against the same contract.
  *
  * Each method maps to one of the unauthenticated public KB endpoints
  * on the upstream CodeLockPro API:

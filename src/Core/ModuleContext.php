@@ -12,8 +12,8 @@ use CodeLockPro\CodeLockPro;
  * Provides the module's registered name, the shared {@link EventBus},
  * and a typed reference to the parent {@link CodeLockPro} client (so
  * modules can call ``$client->request(...)`` for HTTP). The context
- * is intentionally minimal so future modules (community, checkout,
- * payments, chatbot, …) plug in without core changes.
+ * is intentionally minimal so additional modules plug in without
+ * core changes.
  */
 final class ModuleContext
 {

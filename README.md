@@ -1,9 +1,9 @@
 # `codelockpro/sdk`
 
 Pure server-side, modular PHP SDK — the CodeLockPro client framework
-on the server. The knowledge base is module one; future modules
-(community, checkout, payments, chatbot, …) plug into the same
-`CodeLockPro` instance through the same registration surface.
+on the server. Ships with the knowledge base as a built-in module;
+additional modules plug into the same `CodeLockPro` instance through
+the same registration surface.
 
 ## Architecture invariants
 
