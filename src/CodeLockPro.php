@@ -10,17 +10,14 @@ use CodeLockPro\Core\ModuleRegistry;
 use CodeLockPro\Modules\KnowledgeBase;
 
 /**
- * `codelockpro/sdk` — the CodeLockPro client framework, server side.
+ * Server-side foundation of the CodeLockPro SDK.
  *
- * A generic, modular foundation a developer uses on their own backend
- * to compose CodeLockPro features. The package ships with a single
- * built-in module (``kb`` — knowledge base) and exposes the same
- * registration surface for any additional modules the developer
- * authors or that ship in future package versions.
+ * Handles all communication with the CodeLockPro API from the server.
+ * Exposes a modular registration surface for composing CodeLockPro
+ * features into any PHP stack without framework binding or routing.
  *
- * The core has no knowledge of any specific module. Modules are
- * attached via {@see CodeLockPro::register()} and looked up by name
- * via {@see CodeLockPro::module()}. Each module receives a
+ * Modules are attached via {@see CodeLockPro::register()} and looked
+ * up by name via {@see CodeLockPro::module()}. Each module receives a
  * {@see ModuleContext} carrying the shared event bus and a
  * back-reference to this client for HTTP.
  *
@@ -37,7 +34,7 @@ final class CodeLockPro
     private readonly ModuleRegistry $registry;
 
     /**
-     * @param string $baseUrl       Upstream CodeLockPro base URL, e.g. https://api.codelock.pro
+     * @param string $baseUrl       Upstream CodeLockPro base URL
      * @param string $applicationId The ULID of the developer's application — scopes every read
      * @param array<string,string> $defaultHeaders Optional headers merged into every request.
      * @param array<string,callable>|false $modules Module factories to register at construction.
@@ -148,7 +145,7 @@ final class CodeLockPro
         if ($query !== []) {
             $filtered = array_filter(
                 $query,
-                static fn ($v) => $v !== null && $v !== ''
+                static fn($v) => $v !== null && $v !== ''
             );
             if ($filtered !== []) {
                 $url .= '?' . http_build_query($filtered);
