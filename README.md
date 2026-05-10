@@ -5,6 +5,23 @@ on the server. Ships with the knowledge base as a built-in module;
 additional modules plug into the same `CodeLockPro` instance through
 the same registration surface.
 
+## Install
+
+```sh
+composer require codelockpro/sdk
+```
+
+> **Source repository.** This package is published to Packagist from a
+> read-only subtree mirror at
+> [`mbos01/codelockpro-sdk-php`](https://github.com/mbos01/codelockpro-sdk-php).
+> The canonical source lives in
+> [`mbos01/codelockpro`](https://github.com/mbos01/codelockpro) under
+> `sdk/php/` — open issues and PRs there.
+
+> **License.** The SDK is proprietary and may only be used in
+> combination with an active CodeLockPro account. See
+> [`LICENSE`](./LICENSE).
+
 ## Architecture invariants
 
 1. **Modular foundation.** The core has no per-module coupling.
