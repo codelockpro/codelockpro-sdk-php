@@ -21,6 +21,12 @@ use CodeLockPro\Modules\KnowledgeBase;
  * {@see ModuleContext} carrying the shared event bus and a
  * back-reference to this client for HTTP.
  *
+ * The SDK requires an OAuth client credential — pass the bearer token
+ * via the ``$bearerToken`` constructor argument and it will be added
+ * as ``Authorization: Bearer <token>`` to every upstream request. The
+ * scopes the token must carry depend on which modules are used (e.g.
+ * ``kb:read`` and / or ``kb:write`` for the knowledge-base module).
+ *
  * Architecture invariants (mirrors the JS package — see /docs/sdk/README.md):
  *
  *   1. Modular foundation. No coupling to any specific module.
@@ -40,12 +46,15 @@ final class CodeLockPro
      * @param array<string,callable>|false $modules Module factories to register at construction.
      *        Each value is ``callable(ModuleContext): object``. Default: KB only. Pass ``false``
      *        to skip the default registration and register everything explicitly.
+     * @param ?string $bearerToken OAuth bearer token. If non-null and non-empty, sent as
+     *        ``Authorization: Bearer <token>`` on every upstream request.
      */
     public function __construct(
         private readonly string $baseUrl,
         private readonly string $applicationId,
         private readonly array $defaultHeaders = [],
         array|false $modules = null,
+        private readonly ?string $bearerToken = null,
     ) {
         if ($baseUrl === '') {
             throw new \InvalidArgumentException('CodeLockPro: baseUrl is required');
@@ -158,6 +167,9 @@ final class CodeLockPro
         }
 
         $headers = ['Accept: application/json'];
+        if ($this->bearerToken !== null && $this->bearerToken !== '') {
+            $headers[] = 'Authorization: Bearer ' . $this->bearerToken;
+        }
         foreach ($this->defaultHeaders as $name => $value) {
             $headers[] = "$name: $value";
         }

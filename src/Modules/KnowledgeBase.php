@@ -15,26 +15,22 @@ use CodeLockPro\Core\ModuleContext;
  * receives a {@see ModuleContext}. The SDK core does not privilege KB
  * over any other module registered against the same contract.
  *
- * Each method maps to one of the unauthenticated public KB endpoints
- * on the upstream CodeLockPro API:
+ * Each method maps to one of the unified KB endpoints on the upstream
+ * CodeLockPro API. All endpoints require an OAuth bearer with the
+ * appropriate scope (``kb:read`` for reads, ``kb:write`` for writes):
  *
- *   GET /v1/public/kb/{application_id}/articles
- *   GET /v1/public/kb/{application_id}/articles/{id_or_slug}
- *   GET /v1/public/kb/{application_id}/categories
- *   GET /v1/public/kb/{application_id}/search?q=…
- *
- * Plus one server-only action (no upstream public counterpart yet —
- * the developer's backend is expected to forward to whichever
- * analytics endpoint they choose):
- *
- *   trackView(string $articleId): emits ``kb.article.viewed``.
+ *   GET  /v1/kb/{application_id}/articles
+ *   GET  /v1/kb/{application_id}/articles/{id_or_slug}
+ *   GET  /v1/kb/{application_id}/categories
+ *   GET  /v1/kb/{application_id}/search?q=…
+ *   POST /v1/kb/{application_id}/articles/{id}/track-view
  *
  * Events emitted on the shared bus (subscribe via ``$client->on(...)``):
  *
  *   ``kb.article.viewed``    — payload ``['article_id' => …, 'slug' => …]``
  *   ``kb.search.performed``  — payload ``['query' => …, 'count' => …]``
  *
- *     $client = new CodeLockPro('https://api.codelock.pro', '01H…');
+ *     $client = new CodeLockPro('https://api.codelock.pro', '01H…', bearerToken: $token);
  *     $articles = $client->kb()->getArticles();
  */
 final class KnowledgeBase
@@ -104,11 +100,11 @@ final class KnowledgeBase
     }
 
     /**
-     * Action: emit ``kb.article.viewed`` on the shared event bus so host
-     * apps can update analytics, increment in-memory counters, etc. The
-     * upstream public KB API has no public view-tracking endpoint yet,
-     * so this method is intentionally bus-only on the server side; the
-     * companion JS module additionally POSTs to the developer's proxy.
+     * Action: emits ``kb.article.viewed`` on the shared event bus and
+     * fires a best-effort POST to the upstream
+     * ``/v1/kb/{app}/articles/{id}/track-view`` endpoint. The HTTP call
+     * is wrapped in try/catch so view-tracking never throws — the bus
+     * event always fires, even if the network request fails.
      */
     public function trackView(string $articleId, ?string $slug = null): void
     {
@@ -119,6 +115,14 @@ final class KnowledgeBase
             'article_id' => $articleId,
             'slug'       => $slug,
         ]);
+        try {
+            $this->client->request(
+                'POST',
+                $this->base() . '/articles/' . rawurlencode($articleId) . '/track-view',
+            );
+        } catch (\Throwable $e) {
+            // Best-effort — see docblock.
+        }
     }
 
     /** Subscribe to an event scoped to this module (``kb.<event>``). */
@@ -134,7 +138,7 @@ final class KnowledgeBase
 
     private function base(): string
     {
-        return '/v1/public/kb/' . $this->client->getApplicationId();
+        return '/v1/kb/' . $this->client->getApplicationId();
     }
 
     private function event(string $name): string

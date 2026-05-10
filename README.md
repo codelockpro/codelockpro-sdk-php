@@ -87,13 +87,16 @@ stay unambiguous when many modules are registered.
 
 ## Knowledge base — module one
 
-Mapped to the unauthenticated public REST surface:
+Mapped to the unified, secured KB REST surface (every call requires an
+OAuth bearer carrying `kb:read` for reads and `kb:write` for writes;
+view tracking is `kb:read`):
 
 ```
-GET /v1/public/kb/{application_id}/articles
-GET /v1/public/kb/{application_id}/articles/{id_or_slug}
-GET /v1/public/kb/{application_id}/categories
-GET /v1/public/kb/{application_id}/search?q=…
+GET  /v1/kb/{application_id}/articles
+GET  /v1/kb/{application_id}/articles/{id_or_slug}
+GET  /v1/kb/{application_id}/categories
+GET  /v1/kb/{application_id}/search?q=…
+POST /v1/kb/{application_id}/articles/{id}/track-view
 ```
 
 Each call returns the raw decoded JSON body as an associative array.
