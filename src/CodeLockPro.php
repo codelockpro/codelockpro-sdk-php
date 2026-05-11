@@ -200,7 +200,14 @@ final class CodeLockPro
         if ($jsonBody !== null) {
             $encoded = json_encode($jsonBody);
             if ($encoded === false) {
-                throw new \RuntimeException('CodeLockPro: failed to encode JSON request body: ' . json_last_error_msg());
+                throw new \RuntimeException(
+                    'CodeLockPro: failed to encode JSON request body for '
+                    . strtoupper($method)
+                    . ' '
+                    . $path
+                    . ': '
+                    . json_last_error_msg()
+                );
             }
             $options[CURLOPT_POSTFIELDS] = $encoded;
         }
