@@ -38,14 +38,81 @@ $community = $client->community();
 assert_true($portal instanceof Portal, 'portal() should return Portal');
 assert_true($community instanceof Community, 'community() should return Community');
 
-$portalMethods = array_values(array_diff(get_class_methods(Portal::class), ['__construct']));
-$communityMethods = array_values(array_diff(get_class_methods(Community::class), ['__construct']));
-sort($portalMethods);
-sort($communityMethods);
+$portalReflection = new ReflectionClass(Portal::class);
+$communityReflection = new ReflectionClass(Community::class);
+
+$portalMethods = [];
+foreach ($portalReflection->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
+    if ($method->isStatic() || $method->isConstructor() || str_starts_with($method->getName(), '__')) {
+        continue;
+    }
+    $portalMethods[$method->getName()] = $method;
+}
+
+$communityMethods = [];
+foreach ($communityReflection->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
+    if ($method->isStatic() || $method->isConstructor() || str_starts_with($method->getName(), '__')) {
+        continue;
+    }
+    $communityMethods[$method->getName()] = $method;
+}
+
+$portalMethodNames = array_keys($portalMethods);
+$communityMethodNames = array_keys($communityMethods);
+sort($portalMethodNames);
+sort($communityMethodNames);
+
 assert_true(
-    $portalMethods === $communityMethods,
-    'Portal and Community public surfaces should match for BC'
+    $portalMethodNames === $communityMethodNames,
+    'Portal and Community instance method names should match for BC'
 );
+
+foreach ($portalMethodNames as $name) {
+    $portalMethod = $portalMethods[$name];
+    $communityMethod = $communityMethods[$name];
+
+    assert_true(
+        $portalMethod->getNumberOfRequiredParameters() === $communityMethod->getNumberOfRequiredParameters(),
+        "Method $name should keep required parameter count for BC"
+    );
+    assert_true(
+        $portalMethod->getNumberOfParameters() === $communityMethod->getNumberOfParameters(),
+        "Method $name should keep total parameter count for BC"
+    );
+
+    $portalParameters = $portalMethod->getParameters();
+    $communityParameters = $communityMethod->getParameters();
+    foreach ($portalParameters as $index => $portalParameter) {
+        $communityParameter = $communityParameters[$index];
+
+        assert_true(
+            $portalParameter->isOptional() === $communityParameter->isOptional(),
+            "Method $name parameter #$index optionality should match"
+        );
+        assert_true(
+            $portalParameter->isVariadic() === $communityParameter->isVariadic(),
+            "Method $name parameter #$index variadic flag should match"
+        );
+        assert_true(
+            $portalParameter->isPassedByReference() === $communityParameter->isPassedByReference(),
+            "Method $name parameter #$index reference flag should match"
+        );
+
+        $portalParameterType = $portalParameter->getType();
+        $communityParameterType = $communityParameter->getType();
+        assert_true(
+            ($portalParameterType?->__toString() ?? null) === ($communityParameterType?->__toString() ?? null),
+            "Method $name parameter #$index type should match"
+        );
+    }
+
+    $portalReturnType = $portalMethod->getReturnType();
+    $communityReturnType = $communityMethod->getReturnType();
+    assert_true(
+        ($portalReturnType?->__toString() ?? null) === ($communityReturnType?->__toString() ?? null),
+        "Method $name return type should match"
+    );
+}
 
 $seen = [];
 $portalHandler = $portal->on('thread.created', function (array $payload) use (&$seen): void {
