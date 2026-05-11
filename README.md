@@ -144,7 +144,7 @@ $threads = $client->community()->getThreads(['limit' => 20]);
 $post    = $client->community()->createPost('thread_123', ['body' => 'I hit this too']);
 ```
 
-Mapped to the upstream community/forum API surface:
+Mapped to the upstream portal forum API surface:
 
 ```
 GET  /v1/portal/forum/threads
@@ -187,3 +187,16 @@ Deprecation policy and timeline:
 - `portal` naming is the canonical path for all new integrations.
 - Any future removal of `community` naming will happen only in a future
   major release, with migration notice published in advance.
+
+Integrator migration checklist:
+
+- **PHP SDK:** migrate registrations/accessors from
+  `CodeLockPro\Modules\Community` and `$client->community()` to
+  `CodeLockPro\Modules\Portal` and `$client->portal()`.
+- **JS SDK parity:** if your stack also uses JS, mirror the same naming
+  shift with `@codelockpro/sdk/portal` and `client.portal()`.
+- **Events:** prefer `portal.thread.created`, `portal.post.created`,
+  `portal.thread.flagged`, `portal.post.flagged`; keep `community.*`
+  listeners only until all integrations are migrated.
+- **Routes/endpoints:** use portal naming consistently for forum routes
+  (`/portal/*` in proxy layers; `/v1/portal/forum/*` upstream).
