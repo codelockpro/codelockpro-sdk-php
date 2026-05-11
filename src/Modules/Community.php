@@ -154,7 +154,7 @@ final class Community
     }
 
     /**
-     * Subscribe to an event scoped to this module (``community.<event>``).
+     * Subscribe to an event scoped to this module (``<module>.<event>``).
      *
      * @param callable(mixed): void $handler
      * @return callable Unsubscribe callback.
