@@ -137,11 +137,11 @@ Mapped to the upstream community/forum API surface:
 
 ```
 GET  /v1/portal/forum/threads
-GET  /v1/portal/forum/threads/{thread_id}/posts
+GET  /v1/portal/forum/threads/{threadId}/posts
 POST /v1/portal/forum/threads
-POST /v1/portal/forum/threads/{thread_id}/posts
-POST /v1/portal/forum/threads/{thread_id}/flag
-POST /v1/portal/forum/posts/{post_id}/flag
+POST /v1/portal/forum/threads/{threadId}/posts
+POST /v1/portal/forum/threads/{threadId}/flag
+POST /v1/portal/forum/posts/{postId}/flag
 ```
 
 Events emitted on the shared bus are namespaced with the registered
