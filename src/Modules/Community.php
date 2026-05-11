@@ -145,7 +145,7 @@ final class Community
         $reason = trim((string) ($input['reason'] ?? ''));
         $post = $this->client->request(
             'POST',
-            $this->base() . '/posts/' . rawurlencode($postId) . '/flag',
+            $this->postPath($postId, '/flag'),
             [],
             ['reason' => $this->normalizeReason($reason)],
         );
@@ -187,6 +187,11 @@ final class Community
     private function threadPath(string $threadId, string $suffix = ''): string
     {
         return $this->base() . '/threads/' . rawurlencode($threadId) . $suffix;
+    }
+
+    private function postPath(string $postId, string $suffix = ''): string
+    {
+        return $this->base() . '/posts/' . rawurlencode($postId) . $suffix;
     }
 
     private function normalizeReason(string $reason): ?string
