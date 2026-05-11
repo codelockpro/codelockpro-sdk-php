@@ -143,7 +143,7 @@ final class CodeLockPro
 
     /**
      * Convenience accessor for the community module — equivalent to
-     * ``$client->module('community')``.
+     * `$client->module('community')`.
      */
     public function community(): Community
     {

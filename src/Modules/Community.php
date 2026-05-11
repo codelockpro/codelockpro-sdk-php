@@ -56,7 +56,7 @@ final class Community
         }
         return $this->client->request(
             'GET',
-            $this->base() . '/threads/' . rawurlencode($threadId) . '/posts',
+            $this->threadPath($threadId, '/posts'),
             [
                 'skip' => $options['skip'] ?? null,
                 'limit' => $options['limit'] ?? null,
@@ -105,7 +105,7 @@ final class Community
 
         $post = $this->client->request(
             'POST',
-            $this->base() . '/threads/' . rawurlencode($threadId) . '/posts',
+            $this->threadPath($threadId, '/posts'),
             [],
             ['body' => $body],
         );
@@ -125,9 +125,9 @@ final class Community
         $reason = trim((string) ($input['reason'] ?? ''));
         $thread = $this->client->request(
             'POST',
-            $this->base() . '/threads/' . rawurlencode($threadId) . '/flag',
+            $this->threadPath($threadId, '/flag'),
             [],
-            ['reason' => $reason !== '' ? $reason : null],
+            ['reason' => $this->normalizeReason($reason)],
         );
         $this->bus->emit($this->event('thread.flagged'), ['thread' => $thread]);
         return $thread;
@@ -147,7 +147,7 @@ final class Community
             'POST',
             $this->base() . '/posts/' . rawurlencode($postId) . '/flag',
             [],
-            ['reason' => $reason !== '' ? $reason : null],
+            ['reason' => $this->normalizeReason($reason)],
         );
         $this->bus->emit($this->event('post.flagged'), ['post' => $post]);
         return $post;
@@ -182,5 +182,15 @@ final class Community
     private function event(string $name): string
     {
         return $this->name . '.' . $name;
+    }
+
+    private function threadPath(string $threadId, string $suffix = ''): string
+    {
+        return $this->base() . '/threads/' . rawurlencode($threadId) . $suffix;
+    }
+
+    private function normalizeReason(string $reason): ?string
+    {
+        return $reason !== '' ? $reason : null;
     }
 }
