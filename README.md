@@ -1,9 +1,10 @@
 # `codelockpro/sdk`
 
 Pure server-side, modular PHP SDK — the CodeLockPro client framework
-on the server. Ships with the knowledge base as a built-in module;
-additional modules plug into the same `CodeLockPro` instance through
-the same registration surface.
+on the server. Ships with the knowledge base as a built-in module and
+includes a community module factory for forum operations; additional
+modules plug into the same `CodeLockPro` instance through the same
+registration surface.
 
 ## Install
 
@@ -120,3 +121,33 @@ Each call returns the raw decoded JSON body as an associative array.
 On a non-2xx response the client throws
 `CodeLockPro\CodeLockProApiException` carrying the HTTP status and
 response body.
+
+## Community module
+
+Register the community module via the same module contract:
+
+```php
+$client->register('community', [\CodeLockPro\Modules\Community::class, 'create']);
+
+$threads = $client->community()->getThreads(['limit' => 20]);
+$post    = $client->community()->createPost('thread_123', ['body' => 'I hit this too']);
+```
+
+Mapped to the upstream community/forum API surface:
+
+```
+GET  /v1/portal/forum/threads
+GET  /v1/portal/forum/threads/{thread_id}/posts
+POST /v1/portal/forum/threads
+POST /v1/portal/forum/threads/{thread_id}/posts
+POST /v1/portal/forum/threads/{thread_id}/flag
+POST /v1/portal/forum/posts/{post_id}/flag
+```
+
+Events emitted on the shared bus are namespaced with the registered
+module name:
+
+- `community.thread.created`
+- `community.post.created`
+- `community.thread.flagged`
+- `community.post.flagged`

@@ -7,6 +7,7 @@ namespace CodeLockPro;
 use CodeLockPro\Core\EventBus;
 use CodeLockPro\Core\ModuleContext;
 use CodeLockPro\Core\ModuleRegistry;
+use CodeLockPro\Modules\Community;
 use CodeLockPro\Modules\KnowledgeBase;
 
 /**
@@ -141,14 +142,26 @@ final class CodeLockPro
     }
 
     /**
+     * Convenience accessor for the community module — equivalent to
+     * ``$client->module('community')``.
+     */
+    public function community(): Community
+    {
+        /** @var Community $community */
+        $community = $this->module('community');
+        return $community;
+    }
+
+    /**
      * Internal HTTP helper. Modules call this rather than curl directly so
      * cross-cutting concerns (auth, telemetry) stay in one place.
      *
      * @param array<string,scalar|null> $query
+     * @param ?array<string,mixed> $jsonBody
      * @return array<string,mixed>
      * @throws CodeLockProApiException on a non-2xx response.
      */
-    public function request(string $method, string $path, array $query = []): array
+    public function request(string $method, string $path, array $query = [], ?array $jsonBody = null): array
     {
         $url = rtrim($this->baseUrl, '/') . '/' . ltrim($path, '/');
         if ($query !== []) {
@@ -173,14 +186,25 @@ final class CodeLockPro
         foreach ($this->defaultHeaders as $name => $value) {
             $headers[] = "$name: $value";
         }
+        if ($jsonBody !== null) {
+            $headers[] = 'Content-Type: application/json';
+        }
 
-        curl_setopt_array($ch, [
+        $options = [
             CURLOPT_CUSTOMREQUEST  => strtoupper($method),
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_HTTPHEADER     => $headers,
             CURLOPT_TIMEOUT        => 30,
             CURLOPT_FOLLOWLOCATION => false,
-        ]);
+        ];
+        if ($jsonBody !== null) {
+            $encoded = json_encode($jsonBody);
+            if ($encoded === false) {
+                throw new \RuntimeException('CodeLockPro: failed to encode JSON request body');
+            }
+            $options[CURLOPT_POSTFIELDS] = $encoded;
+        }
+        curl_setopt_array($ch, $options);
 
         $body = curl_exec($ch);
         if ($body === false) {
