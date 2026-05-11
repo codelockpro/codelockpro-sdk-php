@@ -2,9 +2,9 @@
 
 Pure server-side, modular PHP SDK — the CodeLockPro client framework
 on the server. Ships with the knowledge base as a built-in module and
-includes a community module factory for forum operations; additional
-modules plug into the same `CodeLockPro` instance through the same
-registration surface.
+includes portal/community module factories for forum operations;
+additional modules plug into the same `CodeLockPro` instance through
+the same registration surface.
 
 ## Install
 
@@ -122,7 +122,18 @@ On a non-2xx response the client throws
 `CodeLockPro\CodeLockProApiException` carrying the HTTP status and
 response body.
 
-## Community module
+## Portal module (canonical)
+
+Register the canonical portal module via the same module contract:
+
+```php
+$client->register('portal', [\CodeLockPro\Modules\Portal::class, 'create']);
+
+$threads = $client->portal()->getThreads(['limit' => 20]);
+$post    = $client->portal()->createPost('thread_123', ['body' => 'I hit this too']);
+```
+
+## Community module (backward-compatible alias)
 
 Register the community module via the same module contract:
 
@@ -151,3 +162,28 @@ module name:
 - `community.post.created`
 - `community.thread.flagged`
 - `community.post.flagged`
+
+When registered as `portal`, event names are emitted as:
+
+- `portal.thread.created`
+- `portal.post.created`
+- `portal.thread.flagged`
+- `portal.post.flagged`
+
+## Migration (community → portal)
+
+Legacy community naming is preserved for backward compatibility. New PHP
+integrations should use portal naming.
+
+| Legacy | Canonical |
+| --- | --- |
+| `CodeLockPro\Modules\Community` | `CodeLockPro\Modules\Portal` |
+| `$client->community()` | `$client->portal()` |
+| `$client->register('community', ...)` | `$client->register('portal', ...)` |
+
+Deprecation policy and timeline:
+
+- `community` naming remains fully supported in the current `0.x` line.
+- `portal` naming is the canonical path for all new integrations.
+- Any future removal of `community` naming will happen only in a future
+  major release, with migration notice published in advance.

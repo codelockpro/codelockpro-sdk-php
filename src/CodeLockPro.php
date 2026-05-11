@@ -9,6 +9,7 @@ use CodeLockPro\Core\ModuleContext;
 use CodeLockPro\Core\ModuleRegistry;
 use CodeLockPro\Modules\Community;
 use CodeLockPro\Modules\KnowledgeBase;
+use CodeLockPro\Modules\Portal;
 
 /**
  * Server-side foundation of the CodeLockPro SDK.
@@ -150,6 +151,17 @@ final class CodeLockPro
         /** @var Community $community */
         $community = $this->module('community');
         return $community;
+    }
+
+    /**
+     * Convenience accessor for the portal module — equivalent to
+     * `$client->module('portal')`.
+     */
+    public function portal(): Portal
+    {
+        /** @var Portal $portal */
+        $portal = $this->module('portal');
+        return $portal;
     }
 
     /**

@@ -11,8 +11,8 @@ use CodeLockPro\Core\ModuleContext;
 /**
  * Community forum module for the server-side SDK.
  *
- * Mirrors the JS community surface with data accessors, actions, and
- * event helpers.
+ * Backward-compatible alias surface. For new integrations, prefer
+ * {@see Portal} as the canonical naming.
  */
 final class Community
 {
