@@ -64,7 +64,10 @@ final class Community
         );
     }
 
-    /** @param array{title?: string, body?: string} $input */
+    /**
+     * @param array{title?: string, body?: string} $input
+     * @return array<string,mixed>
+     */
     public function createThread(array $input): array
     {
         $title = trim((string) ($input['title'] ?? ''));
@@ -86,7 +89,10 @@ final class Community
         return $thread;
     }
 
-    /** @param array{body?: string} $input */
+    /**
+     * @param array{body?: string} $input
+     * @return array<string,mixed>
+     */
     public function createPost(string $threadId, array $input): array
     {
         if ($threadId === '') {
@@ -107,7 +113,10 @@ final class Community
         return $post;
     }
 
-    /** @param array{reason?: string} $input */
+    /**
+     * @param array{reason?: string} $input
+     * @return array<string,mixed>
+     */
     public function flagThread(string $threadId, array $input = []): array
     {
         if ($threadId === '') {
@@ -124,7 +133,10 @@ final class Community
         return $thread;
     }
 
-    /** @param array{reason?: string} $input */
+    /**
+     * @param array{reason?: string} $input
+     * @return array<string,mixed>
+     */
     public function flagPost(string $postId, array $input = []): array
     {
         if ($postId === '') {
@@ -141,12 +153,22 @@ final class Community
         return $post;
     }
 
-    /** Subscribe to an event scoped to this module (``community.<event>``). */
+    /**
+     * Subscribe to an event scoped to this module (``community.<event>``).
+     *
+     * @param callable(mixed): void $handler
+     * @return callable Unsubscribe callback.
+     */
     public function on(string $event, callable $handler): callable
     {
         return $this->bus->on($this->event($event), $handler);
     }
 
+    /**
+     * Unsubscribe a previously-registered handler for a scoped module event.
+     *
+     * @param callable(mixed): void $handler
+     */
     public function off(string $event, callable $handler): void
     {
         $this->bus->off($this->event($event), $handler);
