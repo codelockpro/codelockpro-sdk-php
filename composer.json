@@ -3,10 +3,10 @@
 	"description": "Framework-agnostic, modular server-side SDK for CodeLockPro. Module one: Knowledge base. Pure library — no framework binding, no routing.",
 	"type": "library",
 	"license": "proprietary",
-	"homepage": "https://github.com/mbos01/codelockpro/tree/main/sdk/php#readme",
+	"homepage": "https://github.com/codelockpro/codelockpro/tree/main/sdk/php#readme",
 	"support": {
-		"issues": "https://github.com/mbos01/codelockpro/issues",
-		"source": "https://github.com/mbos01/codelockpro-sdk-php"
+		"issues": "https://github.com/codelockpro/codelockpro/issues",
+		"source": "https://github.com/codelockpro/codelockpro-sdk-php"
 	},
 	"authors": [
 		{
