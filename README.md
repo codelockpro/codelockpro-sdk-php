@@ -15,6 +15,10 @@ composer require codelockpro/sdk
 > **Source repository.** This package is published to Packagist from a
 > read-only subtree mirror at
 > [`codelockpro/codelockpro-sdk-php`](https://github.com/codelockpro/codelockpro-sdk-php).
+> Stable `v<version>` tags are immutable; advertised `dev-main` advances only
+> through normal mirror PR review/checks/merge. The release workflow prepares
+> a compare URL when needed and resumes after that merge, without force or
+> direct mirror-main writes. See [distribution operations](https://github.com/codelockpro/codelockpro/blob/main/docs/sdk/README.md#distribution).
 > The canonical source lives in
 > [`codelockpro/codelockpro`](https://github.com/codelockpro/codelockpro) under
 > `sdk/php/` — open issues and PRs there.
